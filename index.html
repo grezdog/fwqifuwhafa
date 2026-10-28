@@ -1,0 +1,64 @@
+
+function activateNeighboringBlocks(){
+  for(let i=0;i<blocks.length;i++){
+    const a = blocks[i];
+
+    // Blocks that have not been hit stay exactly where they started.
+    if(!a.active) continue;
+
+    for(let j=0;j<blocks.length;j++){
+      if(i===j) continue;
+
+      const b = blocks[j];
+
+      const overlapX =
+        (a.w+b.w)/2-Math.abs(a.x-b.x);
+      const overlapY =
+        (a.h+b.h)/2-Math.abs(a.y-b.y);
+
+      // Only activate another block when a moving block
+      // actually reaches it.
+      if(overlapX>0 && overlapY>0){
+        if(!b.active){
+          activateBlock(
+            b,
+            (a.x<=b.x ? 1 : -1) *
+              Math.max(70,Math.abs(a.vx)*0.45),
+            Math.min(-60,a.vy*0.25-50)
+          );
+        }
+
+        // Separate blocks after they collide.
+        if(overlapX<overlapY){
+          const direction=a.x<b.x ? -1 : 1;
+          const correction=overlapX/2+0.5;
+
+          a.x+=direction*correction;
+
+          if(b.active){
+            b.x-=direction*correction;
+          }
+
+          const oldVelocity=a.vx;
+          a.vx=b.vx*0.65;
+          b.vx=oldVelocity*0.65;
+        }else{
+          const direction=a.y<b.y ? -1 : 1;
+          const correction=overlapY/2+0.5;
+
+          a.y+=direction*correction;
+
+          if(b.active){
+            b.y-=direction*correction;
+          }
+
+          if(a.vy>b.vy){
+            b.vy=Math.max(b.vy,a.vy*0.45);
+          }else{
+            a.vy=Math.max(a.vy,b.vy*0.45);
+          }
+        }
+      }
+    }
+  }
+}
